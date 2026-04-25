@@ -123,6 +123,61 @@
             color: #fff;
             background: rgba(255, 255, 255, 0.08);
         }
+        /* Адаптация под смартфоны */
+        @media (max-width: 768px) {
+            /* Уменьшаем сферу */
+            canvas {
+                transform: scale(1.2);
+                transform-origin: center center;
+            }
+
+            /* Меню на весь экран */
+            .menu-panel {
+                width: 100%;
+                right: -100%;
+                padding: 30px 25px;
+                background: rgba(8, 12, 24, 0.9);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+            }
+            .menu-panel.open {
+                right: 0;
+            }
+
+            /* Имя */
+            .menu-panel h2 {
+                font-size: 2rem;
+                margin-top: -40px;
+                margin-bottom: 6px;
+            }
+
+            /* Подзаголовок */
+            .menu-panel .subtitle {
+                font-size: 0.7rem;
+                letter-spacing: 0.2em;
+                margin-bottom: 35px;
+            }
+
+            /* Пункты меню */
+            .menu-panel a {
+                font-size: 1.1rem;
+                padding: 16px 0;
+            }
+
+            /* Кнопка закрытия */
+            .menu-close {
+                top: 20px;
+                right: 20px;
+                width: 44px;
+                height: 44px;
+                font-size: 1.3rem;
+            }
+
+            /* Отключаем размытие canvas на телефоне (экономия) */
+            canvas.blurred {
+                filter: blur(4px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -302,6 +357,14 @@
             }
         });
 
+        // Поддержка тапов на телефоне
+        window.addEventListener('touchstart', (e) => {
+            const touchX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+            if (touchX > 0.5 && !menuOpen && targetTransform === 0) {
+                openMenu();
+            }
+        });
+
         window.addEventListener('click', () => {
             isShaking = true;
             shakeIntensity = 0.5;
@@ -345,9 +408,19 @@
         
         // Закрытие меню при клике вне его области
         window.addEventListener('click', (e) => {
-            if (menuOpen && !menuPanel.contains(e.target) && mouseX < 0.7) {
-                closeMenu();
-            }
+            // Не срабатывает, если тапнули по меню или сфере
+            if (e.target.closest('.menu-panel') || e.target.tagName === 'CANVAS') return;
+    
+            isShaking = true;
+            shakeIntensity = 0.5;
+            const fadeOut = setInterval(() => {
+                shakeIntensity -= 0.01;
+                if (shakeIntensity <= 0) {
+                    shakeIntensity = 0;
+                    isShaking = false;
+                    clearInterval(fadeOut);
+                }
+            }, 30);
         });
 
         // ---- АНИМАЦИЯ ----
