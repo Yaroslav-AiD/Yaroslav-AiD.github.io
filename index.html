@@ -239,7 +239,7 @@
             const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
             
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a0c);
+            scene.background = new THREE.Color(0x000000);
             scene.fog = new THREE.FogExp2(0x050510, 0.00015);
 
             const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -517,7 +517,7 @@
             const points = new THREE.Points(pointsGeo, pointsMat);
             sphereGroup.add(points);
             
-            sphereGroup.position.y = 0.4;
+            sphereGroup.position.y = 0.6;
             scene.add(sphereGroup);
 
             // Фон из звёзд (круглые)
