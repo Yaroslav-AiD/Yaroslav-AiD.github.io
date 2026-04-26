@@ -239,7 +239,7 @@
             const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
             
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020208);
+            scene.background = new THREE.Color(0x03030a);
             scene.fog = new THREE.FogExp2(0x050510, 0.00015);
 
             const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -548,7 +548,7 @@
 
             const starsMat = new THREE.PointsMaterial({
                 map: starTexture,
-                color: 0x445577,
+                color: 0x556677,
                 size: 0.04,
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
