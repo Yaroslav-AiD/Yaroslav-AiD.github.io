@@ -29,7 +29,7 @@
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 30%, rgba(5, 5, 20, 0.85) 100%);
+            background: radial-gradient(circle, transparent 70%, rgba(5, 5, 20, 0.7) 100%);
             pointer-events: none;
             z-index: 10;
         }
@@ -136,7 +136,7 @@
             text-align: center;
             z-index: 20;
             pointer-events: none;
-            padding-bottom: 70px;
+            padding-bottom: 50px;
         }
         .mobile-overlay .rotating-text {
             color: transparent;
@@ -152,8 +152,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            text-shadow: 0 0 30px rgba(140, 170, 255, 0.4);
-            filter: drop-shadow(0 0 8px rgba(120, 150, 255, 0.5));
+            text-shadow: 0 0 15px rgba(140, 170, 255, 0.4);
+            filter: drop-shadow(0 0 4px rgba(120, 150, 255, 0.5));
         }
         .mobile-overlay .contacts {
             color: rgba(200, 210, 240, 0.5);
@@ -175,6 +175,9 @@
             }
             canvas.blurred {
                 filter: blur(4px);
+            }
+            body::after {
+                background: radial-gradient(circle, transparent 55%, rgba(2, 2, 8, 0.5) 100%);
             }
         }
         
@@ -236,7 +239,7 @@
             const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
             
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x050510);
+            scene.background = new THREE.Color(0x020208);
             scene.fog = new THREE.FogExp2(0x050510, 0.00015);
 
             const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -517,20 +520,40 @@
             sphereGroup.position.y = 0.4;
             scene.add(sphereGroup);
 
+            // Фон из звёзд (круглые)
+            const starCanvas = document.createElement('canvas');
+            starCanvas.width = 32;
+            starCanvas.height = 32;
+            const sctx = starCanvas.getContext('2d');
+            sctx.beginPath();
+            sctx.arc(16, 16, 14, 0, Math.PI * 2);
+            const sg = sctx.createRadialGradient(16, 16, 0, 16, 16, 14);
+            sg.addColorStop(0, 'rgba(120, 150, 200, 1)');
+            sg.addColorStop(0.5, 'rgba(60, 100, 180, 0.6)');
+            sg.addColorStop(1, 'rgba(50, 50, 150, 0)');
+            sctx.fillStyle = sg;
+            sctx.fill();
+            const starTexture = new THREE.CanvasTexture(starCanvas);
+
             const starsGeo = new THREE.BufferGeometry();
-            const starsCount = 1200;
+            const starsCount = 400;
             const starsArr = [];
+            const starsSizes = [];
             for (let i = 0; i < starsCount; i++) {
                 starsArr.push((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 5 - 1);
+                starsSizes.push(Math.random() * 0.02 + 0.007);
             }
             starsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starsArr), 3));
+            starsGeo.setAttribute('size', new THREE.BufferAttribute(new Float32Array(starsSizes), 1));
+
             const starsMat = new THREE.PointsMaterial({
-                color: 0x6688bb,
-                size: 0.025,
+                map: starTexture,
+                color: 0x445577,
+                size: 0.04,
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
                 transparent: true,
-                opacity: 0.55
+                opacity: 0.4
             });
             const stars = new THREE.Points(starsGeo, starsMat);
             scene.add(stars);
