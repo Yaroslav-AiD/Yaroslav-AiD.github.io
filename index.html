@@ -615,8 +615,8 @@
 
             // ==================== АНИМАЦИЯ ВОЛНЫ ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 0.03;
-            const waveWidth = 6;
+            const waveSpeed = 1.5;
+            const waveWidth = 4.5;
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -637,16 +637,16 @@
                     const dist = Math.abs(waveY - avgY);
             
                     // Яркость: база 0.45, на гребне до 0.9
-                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.25 : 0;
+                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.1 : 0;
                     l.material.opacity = 0 + waveBoost;
             
                     // Цвет ярче на гребне
                     if (dist < waveWidth) {
-                        const boost = (1 - dist / waveWidth) * 0.35;
+                        const boost = (1 - dist / waveWidth) * 0.15;
                         const baseColor = new THREE.Color(l.userData.baseColor);
-                        const r = Math.min(1, baseColor.r + boost * 0.6);
-                        const g = Math.min(1, baseColor.g + boost * 0.6);
-                        const b = Math.min(1, baseColor.b + boost * 0.9);
+                        const r = Math.min(1, baseColor.r + boost * 0.5);
+                        const g = Math.min(1, baseColor.g + boost * 0.5);
+                        const b = Math.min(1, baseColor.b + boost * 0.6);
                         l.material.color.setRGB(r, g, b);
                     } else {
                         l.material.color.setHex(l.userData.baseColor);
