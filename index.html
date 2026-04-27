@@ -615,8 +615,12 @@
 
             // ==================== АНИМАЦИЯ ВОЛНЫ ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 0.2;
+            const waveSpeed = 0.05;
             const waveWidth = 5;
+            const waveInterval = 4.0;
+            let lastTime = performance.now();
+            let waveActive = false;         // волна идёт или пауза
+            let waveTimer = 0;
 
             function animate() {
                 requestAnimationFrame(animate);
