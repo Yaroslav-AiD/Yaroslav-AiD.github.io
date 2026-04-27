@@ -615,7 +615,7 @@
 
             // ==================== АНИМАЦИЯ ВОЛНЫ ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 0.01;
+            const waveSpeed = 0.3;
             const waveWidth = 5;
             const waveInterval = 7.0;
             let lastTime = performance.now();
@@ -629,10 +629,19 @@
                 sphereGroup.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
                 stars.rotation.y += 0.0002;
         
-                // Волна сверху вниз
-                waveY += waveSpeed;
-                if (waveY > gs/2 + 2) {
-                    waveY = -gs/2 - 2;
+                // Управление волной
+                if (waveActive) {
+                    waveY += waveSpeed * deltaTime;
+                    if (waveY > gs/2 + 2) {
+                        waveY = -gs/2 - 2;
+                        waveActive = false;   // волна ушла — пауза
+                        waveTimer = 0;
+                    }
+                } else {
+                    waveTimer += deltaTime;
+                    if (waveTimer >= waveInterval) {
+                        waveActive = true;    // новая волна
+                    }
                 }
 
                 // Применяем яркость к линиям
@@ -641,7 +650,7 @@
                     const dist = Math.abs(waveY - avgY);
             
                     // Яркость: база 0.45, на гребне до 0.9
-                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.02 : 0;
+                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.1 : 0;
                     l.material.opacity = 0 + waveBoost;
             
                     // Цвет ярче на гребне
