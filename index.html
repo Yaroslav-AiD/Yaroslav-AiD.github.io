@@ -494,7 +494,7 @@
     
             const edgesGeo = new THREE.EdgesGeometry(geometry);
             const edgesMat = new THREE.LineBasicMaterial({ 
-                color: 0x4488cc, transparent: true, opacity: 0.45 
+                color: 0x999999, transparent: true, opacity: 0.45 
             });
             sphereGroup.add(new THREE.LineSegments(edgesGeo, edgesMat));
     
@@ -504,7 +504,7 @@
             const pointsGeo = new THREE.BufferGeometry();
             pointsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pointsArr), 3));
             sphereGroup.add(new THREE.Points(pointsGeo, new THREE.PointsMaterial({
-                color: 0xaaccff, size: 0.02, blending: THREE.AdditiveBlending, depthWrite: false
+                color: 0xaaaaaa, size: 0.02, blending: THREE.AdditiveBlending, depthWrite: false
             })));
             sphereGroup.position.y = 0.4;
             scene.add(sphereGroup);
