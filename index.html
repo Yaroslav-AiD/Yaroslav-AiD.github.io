@@ -508,29 +508,7 @@
             })));
             sphereGroup.position.y = 0.4;
             scene.add(sphereGroup);
-
-            // Звёзды
-            const starCanvas = document.createElement('canvas'); starCanvas.width = 32; starCanvas.height = 32;
-            const sctx = starCanvas.getContext('2d');
-            sctx.beginPath(); sctx.arc(16,16,14,0,Math.PI*2);
-            const sg = sctx.createRadialGradient(16,16,0,16,16,14);
-            sg.addColorStop(0,'rgba(120,150,200,1)'); sg.addColorStop(0.5,'rgba(60,100,180,0.6)'); sg.addColorStop(1,'rgba(50,50,150,0)');
-            sctx.fillStyle = sg; sctx.fill();
-            const starTexture = new THREE.CanvasTexture(starCanvas);
-
-            const starsGeo = new THREE.BufferGeometry();
-            const starsArr = [], starsSizes = [];
-            for (let i = 0; i < 400; i++) {
-                starsArr.push((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*5-1);
-                starsSizes.push(Math.random()*0.02+0.007);
-            }
-            starsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starsArr), 3));
-            const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({
-                map: starTexture, color: 0x445577, size: 0.04,
-                blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.4
-            }));
-            scene.add(stars);
-
+            
             // Клик — ускорение
             renderer.domElement.addEventListener('click', () => {
                 const ns = 0.002, fs = 0.04, dur = 1200;
