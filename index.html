@@ -597,12 +597,12 @@
 
                     if (p1 && p2 && p3) {
                         const shade = 0.5 + Math.random() * 0.5;
-                        const color = new THREE.Color().setHSL(0.58, 0.6, shade * 0.55);
+                        const color = new THREE.Color().setHSL(0, 0, shade * 0.55);
                         addTriangle(p1, p2, p3, color.getHex());
                     }
                     if (p2 && p3 && p4) {
                         const shade = 0.5 + Math.random() * 0.5;
-                        const color = new THREE.Color().setHSL(0.58, 0.6, shade * 0.55);
+                        const color = new THREE.Color().setHSL(0, 0, shade * 0.55);
                         addTriangle(p2, p3, p4, color.getHex());
                     }
                 }
@@ -615,8 +615,8 @@
 
             // ==================== АНИМАЦИЯ ВОЛНЫ ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 1.5;
-            const waveWidth = 4.5;
+            const waveSpeed = 0.2;
+            const waveWidth = 5;
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -637,12 +637,12 @@
                     const dist = Math.abs(waveY - avgY);
             
                     // Яркость: база 0.45, на гребне до 0.9
-                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.1 : 0;
-                    l.material.opacity = 0 + waveBoost;
+                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.05 : 0;
+                    l.material.opacity = 0.05 + waveBoost;
             
                     // Цвет ярче на гребне
                     if (dist < waveWidth) {
-                        const boost = (1 - dist / waveWidth) * 0.15;
+                        const boost = (1 - dist / waveWidth) * 0.1;
                         const baseColor = new THREE.Color(l.userData.baseColor);
                         const r = Math.min(1, baseColor.r + boost * 0.5);
                         const g = Math.min(1, baseColor.g + boost * 0.5);
