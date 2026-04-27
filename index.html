@@ -139,12 +139,12 @@
             padding-bottom: 50px;
         }
         .mobile-overlay .rotating-text {
-            color: rgba(180, 180, 180, 0.3);
-            -webkit-text-stroke: 1px rgba(160, 160, 160, 0.5);
+            color: rgba(200, 210, 240, 0.15);
+            -webkit-text-stroke: 1px rgba(150, 160, 180, 0.6);
             text-shadow: 
-                0 0 10px rgba(160, 160, 160, 0.4),
-                0 0 30px rgba(160, 160, 160, 0.2),
-                0 0 0 2px rgba(140, 140, 140, 0.3);
+                0 0 10px rgba(140, 170, 255, 0.4),
+                0 0 30px rgba(140, 170, 255, 0.2),
+                0 0 0 2px rgba(100, 130, 180, 0.3);
             font-size: 1.8rem;
             font-weight: 600;
             letter-spacing: 0.08em;
@@ -157,7 +157,7 @@
             text-shadow: 0 0 15px rgba(140, 170, 255, 0.3);
         }
         .mobile-overlay .contacts {
-            color: rgba(180, 180, 180, 0.5);
+            color: rgba(200, 210, 240, 0.5);
             font-size: 1rem;
             letter-spacing: 0.15em;
             padding-left: 30px;
@@ -494,7 +494,7 @@
     
             const edgesGeo = new THREE.EdgesGeometry(geometry);
             const edgesMat = new THREE.LineBasicMaterial({ 
-                color: 0x999999, transparent: true, opacity: 0.45 
+                color: 0x4488cc, transparent: true, opacity: 0.45 
             });
             sphereGroup.add(new THREE.LineSegments(edgesGeo, edgesMat));
     
@@ -504,11 +504,33 @@
             const pointsGeo = new THREE.BufferGeometry();
             pointsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pointsArr), 3));
             sphereGroup.add(new THREE.Points(pointsGeo, new THREE.PointsMaterial({
-                color: 0xaaaaaa, size: 0.02, blending: THREE.AdditiveBlending, depthWrite: false
+                color: 0xaaccff, size: 0.02, blending: THREE.AdditiveBlending, depthWrite: false
             })));
             sphereGroup.position.y = 0.4;
             scene.add(sphereGroup);
-            
+
+            // Звёзды
+            const starCanvas = document.createElement('canvas'); starCanvas.width = 32; starCanvas.height = 32;
+            const sctx = starCanvas.getContext('2d');
+            sctx.beginPath(); sctx.arc(16,16,14,0,Math.PI*2);
+            const sg = sctx.createRadialGradient(16,16,0,16,16,14);
+            sg.addColorStop(0,'rgba(120,150,200,1)'); sg.addColorStop(0.5,'rgba(60,100,180,0.6)'); sg.addColorStop(1,'rgba(50,50,150,0)');
+            sctx.fillStyle = sg; sctx.fill();
+            const starTexture = new THREE.CanvasTexture(starCanvas);
+
+            const starsGeo = new THREE.BufferGeometry();
+            const starsArr = [], starsSizes = [];
+            for (let i = 0; i < 400; i++) {
+                starsArr.push((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*5-1);
+                starsSizes.push(Math.random()*0.02+0.007);
+            }
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starsArr), 3));
+            const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({
+                map: starTexture, color: 0x445577, size: 0.04,
+                blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.4
+            }));
+            scene.add(stars);
+
             // Клик — ускорение
             renderer.domElement.addEventListener('click', () => {
                 const ns = 0.002, fs = 0.04, dur = 1200;
@@ -575,12 +597,12 @@
 
                     if (p1 && p2 && p3) {
                         const shade = 0.5 + Math.random() * 0.5;
-                        const color = new THREE.Color().setHSL(0, 0, shade * 0.55);
+                        const color = new THREE.Color().setHSL(0.58, 0.6, shade * 0.55);
                         addTriangle(p1, p2, p3, color.getHex());
                     }
                     if (p2 && p3 && p4) {
                         const shade = 0.5 + Math.random() * 0.5;
-                        const color = new THREE.Color().setHSL(0, 0, shade * 0.55);
+                        const color = new THREE.Color().setHSL(0.58, 0.6, shade * 0.55);
                         addTriangle(p2, p3, p4, color.getHex());
                     }
                 }
@@ -593,12 +615,8 @@
 
             // ==================== АНИМАЦИЯ ВОЛНЫ ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 0.3;
-            const waveWidth = 5;
-            const waveInterval = 7.0;
-            let lastTime = performance.now();
-            let waveActive = false;         // волна идёт или пауза
-            let waveTimer = 0;
+            const waveSpeed = 1.5;
+            const waveWidth = 4.5;
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -607,19 +625,10 @@
                 sphereGroup.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
                 stars.rotation.y += 0.0002;
         
-                // Управление волной
-                if (waveActive) {
-                    waveY += waveSpeed * deltaTime;
-                    if (waveY > gs/2 + 2) {
-                        waveY = -gs/2 - 2;
-                        waveActive = false;   // волна ушла — пауза
-                        waveTimer = 0;
-                    }
-                } else {
-                    waveTimer += deltaTime;
-                    if (waveTimer >= waveInterval) {
-                        waveActive = true;    // новая волна
-                    }
+                // Волна сверху вниз
+                waveY += waveSpeed;
+                if (waveY > gs/2 + 2) {
+                    waveY = -gs/2 - 2;
                 }
 
                 // Применяем яркость к линиям
@@ -633,7 +642,7 @@
             
                     // Цвет ярче на гребне
                     if (dist < waveWidth) {
-                        const boost = (1 - dist / waveWidth) * 0.05;
+                        const boost = (1 - dist / waveWidth) * 0.15;
                         const baseColor = new THREE.Color(l.userData.baseColor);
                         const r = Math.min(1, baseColor.r + boost * 0.5);
                         const g = Math.min(1, baseColor.g + boost * 0.5);
