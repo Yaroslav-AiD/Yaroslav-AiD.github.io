@@ -138,7 +138,7 @@
             text-align: center;
             z-index: 20;
             pointer-events: none;
-            padding-bottom: 70px;
+            padding-bottom: 60px;
         }
         .mobile-overlay .rotating-text {
             color: rgba(180, 180, 180, 0.3);
@@ -526,17 +526,33 @@
 
             // ==================== ЧЁРНЫЕ ХЭДЕР И ФУТТЕР ====================
             // Хэддер сверху
-            const headerGeo = new THREE.PlaneGeometry(12, 1.2);
-            const headerMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.95, side: THREE.DoubleSide });
+            const headerGeo = new THREE.PlaneGeometry(12, 1.4);
+            const headerMat = new THREE.MeshBasicMaterial({ 
+                color: 0x000000, 
+                transparent: true, 
+                opacity: 1.0,           // ← 1.0 вместо 0.95 — полностью чёрный
+                side: THREE.DoubleSide,
+                depthTest: false,       // ← перекрывает всё
+                depthWrite: false
+            });
             const header = new THREE.Mesh(headerGeo, headerMat);
-            header.position.set(0, 4.0, -1);
+            header.position.set(0, 4.2, 0);  // ← z: 0 — ближе к камере
+            header.renderOrder = 999;        // ← рендерится последним
             scene.add(header);
         
             // Футтер снизу
-            const footerGeo = new THREE.PlaneGeometry(12, 1.8);
-            const footerMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.95, side: THREE.DoubleSide });
+            const footerGeo = new THREE.PlaneGeometry(12, 2.0);
+            const footerMat = new THREE.MeshBasicMaterial({ 
+                color: 0x000000, 
+                transparent: true, 
+                opacity: 1.0,           // ← 1.0
+                side: THREE.DoubleSide,
+                depthTest: false,
+                depthWrite: false
+            });
             const footer = new THREE.Mesh(footerGeo, footerMat);
-            footer.position.set(0, -4.0, -1);
+            footer.position.set(0, -4.2, 0);
+            footer.renderOrder = 999;
             scene.add(footer);
         
             // ==================== СЕТКА — ЕДВА ЗАМЕТНАЯ ====================
@@ -634,7 +650,7 @@
                     const dist = Math.abs(waveY - avgY);
                     
                     // Очень тусклая яркость: макс 0.06, база 0
-                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.08 : 0;
+                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.12 : 0;
                     l.material.opacity = 0.03 + waveBoost;
                     
                     // Цвет не меняем
