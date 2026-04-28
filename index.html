@@ -512,6 +512,243 @@
             sphereGroup.position.y = 0.4;
             scene.add(sphereGroup);
 
+            // ==================== ПЕРВОЕ КОЛЬЦО-СТАНЦИЯ ====================
+            const stationGroup = new THREE.Group();
+            const ringRadius = 1.2;
+            const ringWidth = 0.18;
+            const sectionCount = 20;
+
+            // Генератор древнего текста
+            function generateAncientText(length) {
+                const chars = [
+                    'ᚠ', 'ᚡ', 'ᚢ', 'ᚣ', 'ᚤ', 'ᚥ', 'ᚦ', 'ᚧ', 'ᚨ', 'ᚩ', 'ᚪ', 'ᚫ', 'ᚬ', 'ᚭ', 'ᚮ', 'ᚯ',
+                    'ᚰ', 'ᚱ', 'ᚲ', 'ᚳ', 'ᚴ', 'ᚵ', 'ᚶ', 'ᚷ', 'ᚸ', 'ᚹ', 'ᚺ', 'ᚻ', 'ᚼ', 'ᚽ', 'ᚾ', 'ᚿ',
+                    '⫗', '⫘', '⫙', '⫚', '⫛', '⫝̸', '⫝', '⫞', '⫟', '⫠', '∿', '≋', '⫡', '⫢', '⫣', '⫤',
+                    'ऄ', 'अ', 'आ', 'इ', 'ई', 'उ', 'ऊ', 'ऋ', 'ऌ', 'ऍ', 'ऎ', 'ए', 'ऐ', 'ऑ', 'ऒ', 'ओ',
+                    'ᛠ', 'ᛡ', 'ᛢ', 'ᛣ', 'ᛤ', 'ᛥ', 'ᛦ', 'ᛧ', 'ᛨ', 'ᛩ', 'ᛪ', '᛫', '᛬', '᛭', 'ᛮ', 'ᛯ'
+                ];
+                let text = '';
+                for (let i = 0; i < length; i++) {
+                    text += chars[Math.floor(Math.random() * chars.length)];
+                }
+                return text;
+            }
+
+            for (let s = 0; s < sectionCount; s++) {
+                const startAngle = (s / sectionCount) * Math.PI * 2;
+                const endAngle = ((s + 1) / sectionCount) * Math.PI * 2;
+                const midAngle = (startAngle + endAngle) / 2;
+                
+                // Дуга секции
+                const curvePoints = [];
+                const arcSegments = 16;
+                
+                for (let j = 0; j <= arcSegments; j++) {
+                    const t = startAngle + (j / arcSegments) * (endAngle - startAngle);
+                    curvePoints.push(new THREE.Vector3(Math.cos(t) * (ringRadius + ringWidth/2), 0, Math.sin(t) * (ringRadius + ringWidth/2)));
+                }
+                for (let j = arcSegments; j >= 0; j--) {
+                    const t = startAngle + (j / arcSegments) * (endAngle - startAngle);
+                    curvePoints.push(new THREE.Vector3(Math.cos(t) * (ringRadius - ringWidth/2), 0, Math.sin(t) * (ringRadius - ringWidth/2)));
+                }
+                curvePoints.push(curvePoints[0]);
+                
+                const sectionCurve = new THREE.CatmullRomCurve3(curvePoints, false);
+                const tubeMat = new THREE.MeshBasicMaterial({ 
+                    color: 0x888888, transparent: true, opacity: 0.25, side: THREE.DoubleSide
+                });
+                stationGroup.add(new THREE.Mesh(new THREE.TubeGeometry(sectionCurve, 48, 0.006, 6, false), tubeMat));
+                
+                // Разделители
+                const dividerPoints = [
+                    new THREE.Vector3(Math.cos(startAngle) * (ringRadius - ringWidth/2), 0, Math.sin(startAngle) * (ringRadius - ringWidth/2)),
+                    new THREE.Vector3(Math.cos(startAngle) * (ringRadius + ringWidth/2), 0, Math.sin(startAngle) * (ringRadius + ringWidth/2))
+                ];
+                const dividerCurve = new THREE.CatmullRomCurve3(dividerPoints, false);
+                stationGroup.add(new THREE.Mesh(new THREE.TubeGeometry(dividerCurve, 8, 0.005, 4, false), tubeMat));
+                
+                // Текстовая текстура секции
+                const textCanvas = document.createElement('canvas');
+                textCanvas.width = 128;
+                textCanvas.height = 64;
+                const tctx = textCanvas.getContext('2d');
+                tctx.clearRect(0, 0, 128, 64);
+                
+                tctx.fillStyle = '#999999';
+                tctx.font = '11px serif';
+                for (let row = 0; row < 5; row++) {
+                    tctx.fillText(generateAncientText(12 + Math.floor(Math.random() * 8)), 4, 12 + row * 12);
+                }
+                
+                tctx.fillStyle = '#aaaaaa';
+                tctx.font = '16px serif';
+                tctx.fillText(generateAncientText(1), 8, 14);
+                
+                const textTexture = new THREE.CanvasTexture(textCanvas);
+                textTexture.minFilter = THREE.LinearFilter;
+                textTexture.magFilter = THREE.LinearFilter;
+                
+                const textPlaneGeo = new THREE.PlaneGeometry(ringWidth * 0.6, 0.08);
+                const textPlane = new THREE.Mesh(textPlaneGeo, new THREE.MeshBasicMaterial({ 
+                    map: textTexture, transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthTest: false, depthWrite: false
+                }));
+                textPlane.position.set(Math.cos(midAngle) * ringRadius, 0, Math.sin(midAngle) * ringRadius);
+                textPlane.rotation.y = -midAngle + Math.PI / 2;
+                stationGroup.add(textPlane);
+                
+                // Мелкие строки текста
+                for (let d = 0; d < 2; d++) {
+                    const tc2 = document.createElement('canvas');
+                    tc2.width = 80; tc2.height = 16;
+                    const ctx2 = tc2.getContext('2d');
+                    ctx2.fillStyle = '#888888';
+                    ctx2.font = '9px serif';
+                    ctx2.fillText(generateAncientText(14), 2, 10);
+                    
+                    const tex2 = new THREE.CanvasTexture(tc2);
+                    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ 
+                        map: tex2, transparent: true, opacity: 0.35, depthTest: false, depthWrite: false
+                    }));
+                    const dotAngle = startAngle + Math.random() * (endAngle - startAngle);
+                    const dotRadius = (ringRadius - ringWidth/2 + 0.06) + Math.random() * (ringWidth - 0.12);
+                    sprite.position.set(Math.cos(dotAngle) * dotRadius, (Math.random() - 0.5) * 0.06, Math.sin(dotAngle) * dotRadius);
+                    sprite.scale.set(ringWidth * 0.7, 0.08, 1);
+                    stationGroup.add(sprite);
+                }
+            }
+
+            // Ободы
+            const outerPoints = [];
+            const innerPoints = [];
+            for (let j = 0; j <= 128; j++) {
+                const t = (j / 128) * Math.PI * 2;
+                outerPoints.push(new THREE.Vector3(Math.cos(t) * (ringRadius + ringWidth/2), 0, Math.sin(t) * (ringRadius + ringWidth/2)));
+                innerPoints.push(new THREE.Vector3(Math.cos(t) * (ringRadius - ringWidth/2), 0, Math.sin(t) * (ringRadius - ringWidth/2)));
+            }
+
+            const outerCurve = new THREE.CatmullRomCurve3(outerPoints, true);
+            stationGroup.add(new THREE.Mesh(
+                new THREE.TubeGeometry(outerCurve, 100, 0.007, 6, true),
+                new THREE.MeshBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.25, side: THREE.DoubleSide })
+            ));
+
+            const innerCurve = new THREE.CatmullRomCurve3(innerPoints, true);
+            stationGroup.add(new THREE.Mesh(
+                new THREE.TubeGeometry(innerCurve, 100, 0.005, 6, true),
+                new THREE.MeshBasicMaterial({ color: 0x777777, transparent: true, opacity: 0.2, side: THREE.DoubleSide })
+            ));
+
+            stationGroup.position.y = 0.4;
+            stationGroup.rotation.x = Math.PI / 2.8;
+            stationGroup.rotation.y = Math.PI / 6;
+            scene.add(stationGroup);
+
+            // ==================== ВТОРОЕ КОЛЬЦО-СТАНЦИЯ ====================
+            const stationGroup2 = new THREE.Group();
+            const ringRadius2 = 1.35;
+            const ringWidth2 = 0.15;
+            const sectionCount2 = 16;
+
+            for (let s = 0; s < sectionCount2; s++) {
+                const startAngle = (s / sectionCount2) * Math.PI * 2;
+                const endAngle = ((s + 1) / sectionCount2) * Math.PI * 2;
+                const midAngle = (startAngle + endAngle) / 2;
+                
+                const curvePoints = [];
+                const arcSegments = 16;
+                
+                for (let j = 0; j <= arcSegments; j++) {
+                    const t = startAngle + (j / arcSegments) * (endAngle - startAngle);
+                    curvePoints.push(new THREE.Vector3(Math.cos(t) * (ringRadius2 + ringWidth2/2), 0, Math.sin(t) * (ringRadius2 + ringWidth2/2)));
+                }
+                for (let j = arcSegments; j >= 0; j--) {
+                    const t = startAngle + (j / arcSegments) * (endAngle - startAngle);
+                    curvePoints.push(new THREE.Vector3(Math.cos(t) * (ringRadius2 - ringWidth2/2), 0, Math.sin(t) * (ringRadius2 - ringWidth2/2)));
+                }
+                curvePoints.push(curvePoints[0]);
+                
+                const tubeMat2 = new THREE.MeshBasicMaterial({ 
+                    color: 0x777777, transparent: true, opacity: 0.3, side: THREE.DoubleSide
+                });
+                stationGroup2.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(curvePoints, false), 48, 0.005, 6, false), tubeMat2));
+                
+                // Разделители
+                const dividerPoints = [
+                    new THREE.Vector3(Math.cos(startAngle) * (ringRadius2 - ringWidth2/2), 0, Math.sin(startAngle) * (ringRadius2 - ringWidth2/2)),
+                    new THREE.Vector3(Math.cos(startAngle) * (ringRadius2 + ringWidth2/2), 0, Math.sin(startAngle) * (ringRadius2 + ringWidth2/2))
+                ];
+                stationGroup2.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(dividerPoints, false), 8, 0.004, 4, false), tubeMat2));
+                
+                // Текстовая текстура
+                const textCanvas = document.createElement('canvas');
+                textCanvas.width = 100; textCanvas.height = 48;
+                const tctx = textCanvas.getContext('2d');
+                tctx.clearRect(0, 0, 100, 48);
+                
+                tctx.fillStyle = '#888888';
+                tctx.font = '10px serif';
+                for (let row = 0; row < 4; row++) {
+                    tctx.fillText(generateAncientText(10 + Math.floor(Math.random() * 6)), 3, 10 + row * 11);
+                }
+                tctx.fillStyle = '#999999';
+                tctx.font = '14px serif';
+                tctx.fillText(generateAncientText(1), 6, 12);
+                
+                const textTexture = new THREE.CanvasTexture(textCanvas);
+                textTexture.minFilter = THREE.LinearFilter;
+                textTexture.magFilter = THREE.LinearFilter;
+                
+                const textSprite = new THREE.Sprite(new THREE.SpriteMaterial({ 
+                    map: textTexture, transparent: true, opacity: 0.7, depthTest: false, depthWrite: false
+                }));
+                textSprite.position.set(Math.cos(midAngle) * ringRadius2, 0, Math.sin(midAngle) * ringRadius2);
+                textSprite.scale.set(ringWidth2 * 0.7, 0.12, 1);
+                stationGroup2.add(textSprite);
+                
+                // Мелкая строка
+                const tc2 = document.createElement('canvas');
+                tc2.width = 60; tc2.height = 14;
+                const ctx2 = tc2.getContext('2d');
+                ctx2.fillStyle = '#777777';
+                ctx2.font = '8px serif';
+                ctx2.fillText(generateAncientText(12), 2, 9);
+                
+                const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ 
+                    map: new THREE.CanvasTexture(tc2), transparent: true, opacity: 0.7, depthTest: false, depthWrite: false
+                }));
+                const dotAngle = startAngle + Math.random() * (endAngle - startAngle);
+                const dotRadius = (ringRadius2 - ringWidth2/2 + 0.04) + Math.random() * (ringWidth2 - 0.08);
+                sprite.position.set(Math.cos(dotAngle) * dotRadius, 0, Math.sin(dotAngle) * dotRadius);
+                sprite.scale.set(ringWidth2 * 0.7, 0.06, 1);
+                stationGroup2.add(sprite);
+            }
+
+            // Ободы второго кольца
+            const outer2Points = [];
+            const inner2Points = [];
+            for (let j = 0; j <= 100; j++) {
+                const t = (j / 100) * Math.PI * 2;
+                outer2Points.push(new THREE.Vector3(Math.cos(t) * (ringRadius2 + ringWidth2/2), 0, Math.sin(t) * (ringRadius2 + ringWidth2/2)));
+                inner2Points.push(new THREE.Vector3(Math.cos(t) * (ringRadius2 - ringWidth2/2), 0, Math.sin(t) * (ringRadius2 - ringWidth2/2)));
+            }
+
+            const outerCurve2 = new THREE.CatmullRomCurve3(outer2Points, true);
+            stationGroup2.add(new THREE.Mesh(
+                new THREE.TubeGeometry(outerCurve2, 100, 0.006, 6, true),
+                new THREE.MeshBasicMaterial({ color: 0x777777, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+            ));
+
+            const innerCurve2 = new THREE.CatmullRomCurve3(inner2Points, true);
+            stationGroup2.add(new THREE.Mesh(
+                new THREE.TubeGeometry(innerCurve2, 100, 0.004, 6, true),
+                new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.25, side: THREE.DoubleSide })
+            ));
+
+            stationGroup2.position.y = 0.4;
+            stationGroup2.rotation.x = Math.PI / 1.6;
+            stationGroup2.rotation.y = -Math.PI / 5;
+            scene.add(stationGroup2);
+
             // Клик — ускорение
             renderer.domElement.addEventListener('click', () => {
                 const ns = 0.002, fs = 0.04, dur = 1200;
@@ -525,22 +762,19 @@
             });
 
             // ==================== ЧЁРНЫЕ ХЭДЕР И ФУТТЕР ====================
+            // ==================== ЧЁРНЫЕ ХЭДЕР И ФУТТЕР ====================
             // Хэддер сверху
             const headerGeo = new THREE.PlaneGeometry(12, 1.4);
             const headerMat = new THREE.MeshBasicMaterial({ 
-                color: 0x000000, 
-                transparent: true, 
-                opacity: 1.0,           // ← 1.0 вместо 0.95 — полностью чёрный
-                side: THREE.DoubleSide,
-                depthTest: false,       // ← перекрывает всё
-                depthWrite: false
+                color: 0x000000, transparent: true, opacity: 1.0,
+                side: THREE.DoubleSide, depthTest: false, depthWrite: false
             });
             const header = new THREE.Mesh(headerGeo, headerMat);
-            header.position.set(0, 4.2, 0);  // ← z: 0 — ближе к камере
-            header.renderOrder = 999;        // ← рендерится последним
+            header.position.set(0, 4.2, 0);
+            header.renderOrder = 999;
             scene.add(header);
 
-            // 2. Градиент хэддера (плавный переход)
+            // Градиент хэддера
             const headerGradientGeo = new THREE.PlaneGeometry(12, 1.0);
             const headerGradientMat = new THREE.MeshBasicMaterial({ 
                 color: 0x000000, transparent: true, opacity: 0.7,
@@ -554,19 +788,15 @@
             // Футтер снизу
             const footerGeo = new THREE.PlaneGeometry(12, 2.0);
             const footerMat = new THREE.MeshBasicMaterial({ 
-                color: 0x000000, 
-                transparent: true, 
-                opacity: 1.0,           // ← 1.0
-                side: THREE.DoubleSide,
-                depthTest: false,
-                depthWrite: false
+                color: 0x000000, transparent: true, opacity: 1.0,
+                side: THREE.DoubleSide, depthTest: false, depthWrite: false
             });
             const footer = new THREE.Mesh(footerGeo, footerMat);
             footer.position.set(0, -4.2, 0);
             footer.renderOrder = 999;
             scene.add(footer);
 
-            // 4. Градиент футтера (плавный переход)
+            // Градиент футтера
             const footerGradientGeo = new THREE.PlaneGeometry(12, 1.0);
             const footerGradientMat = new THREE.MeshBasicMaterial({ 
                 color: 0x000000, transparent: true, opacity: 0.7,
@@ -599,19 +829,12 @@
                     new THREE.Vector3(p3.x, p3.y, 0),
                     new THREE.Vector3(p1.x, p1.y, 0)
                 ];
-                
                 const geo = new THREE.BufferGeometry().setFromPoints(points);
                 const mat = new THREE.LineBasicMaterial({ 
-                    color: baseColor, 
-                    transparent: true, 
-                    opacity: 0.03
+                    color: baseColor, transparent: true, opacity: 0.03
                 });
-                
                 const line = new THREE.Line(geo, mat);
-                line.userData = { 
-                    baseColor: baseColor, 
-                    avgY: (p1.y + p2.y + p3.y) / 3 
-                };
+                line.userData = { baseColor: baseColor, avgY: (p1.y + p2.y + p3.y) / 3 };
                 gridGroup.add(line);
                 gridLines.push(line);
             }
@@ -627,7 +850,7 @@
         
                     if (p1 && p2 && p3) {
                         const shade = 0.5 + Math.random() * 0.3;
-                        const color = new THREE.Color().setHSL(0, 0, shade * 0.4);  // серый, тусклый
+                        const color = new THREE.Color().setHSL(0, 0, shade * 0.4);
                         addTriangle(p1, p2, p3, color.getHex());
                     }
                     if (p2 && p3 && p4) {
@@ -642,10 +865,10 @@
             gridGroup.rotation.x = -0.2;
             scene.add(gridGroup);
         
-            // ==================== АНИМАЦИЯ ВОЛНЫ — ЕДВА ЗАМЕТНА ====================
+            // ==================== АНИМАЦИЯ ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 2.5;         // быстрее, но тусклее — лёгкий перелив
-            const waveWidth = 6.0;         // широкая — мягкий переход
+            const waveSpeed = 2.5;
+            const waveWidth = 6.0;
             let lastTime = performance.now();
         
             function animate() {
@@ -654,28 +877,22 @@
                 const now = performance.now();
                 let deltaTime = (now - lastTime) / 1000;
                 lastTime = now;
-                
                 if (deltaTime > 0.1) deltaTime = 0.1;
         
                 sphereGroup.rotation.y += 0.002;
                 sphereGroup.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
+
+                stationGroup.rotation.z += 0.004;
+                stationGroup2.rotation.z -= 0.003;
         
-                // Волна
                 waveY += waveSpeed * deltaTime;
-                if (waveY > gs/2 + 2) {
-                    waveY = -gs/2 - 2;
-                }
+                if (waveY > gs/2 + 2) waveY = -gs/2 - 2;
         
-                // ЕДВА ЗАМЕТНЫЙ ПЕРЕЛИВ
                 gridLines.forEach((l) => {
                     const avgY = l.userData.avgY;
                     const dist = Math.abs(waveY - avgY);
-                    
-                    // Очень тусклая яркость: макс 0.06, база 0
                     const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.12 : 0;
                     l.material.opacity = 0.03 + waveBoost;
-                    
-                    // Цвет не меняем
                     l.material.color.setHex(l.userData.baseColor);
                 });
         
@@ -725,7 +942,7 @@
                     scrambleTo(np); 
                 }, 150);
             }
-        
+
             setInterval(changePhrase, 3000);
         }
     </script>
