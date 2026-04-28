@@ -867,7 +867,7 @@
         
             // ==================== АНИМАЦИЯ ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 2.5;
+            const waveSpeed = 4;
             const waveWidth = 6.0;
             let lastTime = performance.now();
         
@@ -882,8 +882,8 @@
                 sphereGroup.rotation.y += 0.002;
                 sphereGroup.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
 
-                stationGroup.rotation.z += 0.004;
-                stationGroup2.rotation.z -= 0.003;
+                stationGroup.rotation.z += 0.008;
+                stationGroup2.rotation.z -= 0.006;
         
                 waveY += waveSpeed * deltaTime;
                 if (waveY > gs/2 + 2) waveY = -gs/2 - 2;
