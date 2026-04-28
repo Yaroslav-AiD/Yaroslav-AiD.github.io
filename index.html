@@ -489,12 +489,13 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             document.body.appendChild(renderer.domElement);
 
+            // ==================== СФЕРА — СЕРАЯ ====================
             const sphereGroup = new THREE.Group();
             const geometry = new THREE.IcosahedronGeometry(0.8, 4);
     
             const edgesGeo = new THREE.EdgesGeometry(geometry);
             const edgesMat = new THREE.LineBasicMaterial({ 
-                color: 0x4488cc, transparent: true, opacity: 0.45 
+                color: 0x666666, transparent: true, opacity: 0.35 
             });
             sphereGroup.add(new THREE.LineSegments(edgesGeo, edgesMat));
     
@@ -504,32 +505,10 @@
             const pointsGeo = new THREE.BufferGeometry();
             pointsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pointsArr), 3));
             sphereGroup.add(new THREE.Points(pointsGeo, new THREE.PointsMaterial({
-                color: 0xaaccff, size: 0.02, blending: THREE.AdditiveBlending, depthWrite: false
+                color: 0x999999, size: 0.018, depthWrite: false
             })));
             sphereGroup.position.y = 0.4;
             scene.add(sphereGroup);
-
-            // Звёзды
-            const starCanvas = document.createElement('canvas'); starCanvas.width = 32; starCanvas.height = 32;
-            const sctx = starCanvas.getContext('2d');
-            sctx.beginPath(); sctx.arc(16,16,14,0,Math.PI*2);
-            const sg = sctx.createRadialGradient(16,16,0,16,16,14);
-            sg.addColorStop(0,'rgba(120,150,200,1)'); sg.addColorStop(0.5,'rgba(60,100,180,0.6)'); sg.addColorStop(1,'rgba(50,50,150,0)');
-            sctx.fillStyle = sg; sctx.fill();
-            const starTexture = new THREE.CanvasTexture(starCanvas);
-
-            const starsGeo = new THREE.BufferGeometry();
-            const starsArr = [], starsSizes = [];
-            for (let i = 0; i < 400; i++) {
-                starsArr.push((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*5-1);
-                starsSizes.push(Math.random()*0.02+0.007);
-            }
-            starsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starsArr), 3));
-            const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({
-                map: starTexture, color: 0x445577, size: 0.04,
-                blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.4
-            }));
-            scene.add(stars);
 
             // Клик — ускорение
             renderer.domElement.addEventListener('click', () => {
@@ -543,14 +522,28 @@
                 requestAnimationFrame(burst);
             });
 
-            // ==================== СЕТКА НА ВЕСЬ ЭКРАН ====================
+            // ==================== ЧЁРНЫЕ ХЭДЕР И ФУТТЕР ====================
+            // Хэддер сверху
+            const headerGeo = new THREE.PlaneGeometry(12, 1.2);
+            const headerMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.95, side: THREE.DoubleSide });
+            const header = new THREE.Mesh(headerGeo, headerMat);
+            header.position.set(0, 4.0, -1);
+            scene.add(header);
+        
+            // Футтер снизу
+            const footerGeo = new THREE.PlaneGeometry(12, 1.8);
+            const footerMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.95, side: THREE.DoubleSide });
+            const footer = new THREE.Mesh(footerGeo, footerMat);
+            footer.position.set(0, -4.0, -1);
+            scene.add(footer);
+        
+            // ==================== СЕТКА — ЕДВА ЗАМЕТНАЯ ====================
             const gridGroup = new THREE.Group();
             const gridLines = [];
-            const gs = 10;        // ширина сетки (больше — покрывает шире)
-            const gStep = 0.35;   // шаг между точками
+            const gs = 10;
+            const gStep = 0.35;
             const allPoints = [];
 
-            // Генерируем точки — сетка по X и Y
             for (let y = -gs/2; y <= gs/2; y += gStep) {
                 for (let x = -gs/2; x <= gs/2; x += gStep) {
                     const offsetX = (Math.random() - 0.5) * 0.18;
@@ -558,24 +551,22 @@
                     allPoints.push({ x: x + offsetX, y: y + offsetY, z: 0 });
                 }
             }
-
-            // Строим линии треугольников
+        
             function addTriangle(p1, p2, p3, baseColor) {
-                // Создаём замкнутый треугольник из линий
                 const points = [
                     new THREE.Vector3(p1.x, p1.y, 0),
                     new THREE.Vector3(p2.x, p2.y, 0),
                     new THREE.Vector3(p3.x, p3.y, 0),
                     new THREE.Vector3(p1.x, p1.y, 0)
                 ];
-        
+                
                 const geo = new THREE.BufferGeometry().setFromPoints(points);
                 const mat = new THREE.LineBasicMaterial({ 
                     color: baseColor, 
                     transparent: true, 
-                    opacity: 0  // БАЗОВАЯ ЯРКОСТЬ — ВСЕГДА ВИДНО
+                    opacity: 0
                 });
-        
+                
                 const line = new THREE.Line(geo, mat);
                 line.userData = { 
                     baseColor: baseColor, 
@@ -584,8 +575,7 @@
                 gridGroup.add(line);
                 gridLines.push(line);
             }
-
-            // Строим треугольники между соседними точками
+        
             const cols = Math.floor(gs / gStep) + 1;
             for (let row = 0; row < cols - 1; row++) {
                 for (let col = 0; col < cols - 1; col++) {
@@ -594,81 +584,77 @@
                     const p2 = allPoints[idx + 1];
                     const p3 = allPoints[idx + cols];
                     const p4 = allPoints[idx + cols + 1];
-
+        
                     if (p1 && p2 && p3) {
-                        const shade = 0.5 + Math.random() * 0.5;
-                        const color = new THREE.Color().setHSL(0.58, 0.6, shade * 0.55);
+                        const shade = 0.5 + Math.random() * 0.3;
+                        const color = new THREE.Color().setHSL(0, 0, shade * 0.3);  // серый, тусклый
                         addTriangle(p1, p2, p3, color.getHex());
                     }
                     if (p2 && p3 && p4) {
-                        const shade = 0.5 + Math.random() * 0.5;
-                        const color = new THREE.Color().setHSL(0.58, 0.6, shade * 0.55);
+                        const shade = 0.5 + Math.random() * 0.3;
+                        const color = new THREE.Color().setHSL(0, 0, shade * 0.3);
                         addTriangle(p2, p3, p4, color.getHex());
                     }
                 }
             }
 
-            // Позиционируем сетку на весь экран
-            gridGroup.position.set(0, -0.5, -2.0);  // по центру, чуть ниже, перед камерой
-            gridGroup.rotation.x = -0.2;             // лёгкий наклон
+            gridGroup.position.set(0, -0.3, -2.0);
+            gridGroup.rotation.x = -0.2;
             scene.add(gridGroup);
-
-            // ==================== АНИМАЦИЯ ВОЛНЫ ====================
+        
+            // ==================== АНИМАЦИЯ ВОЛНЫ — ЕДВА ЗАМЕТНА ====================
             let waveY = -gs/2 - 1.5;
-            const waveSpeed = 1.5;
-            const waveWidth = 4.5;
-
+            const waveSpeed = 2.5;         // быстрее, но тусклее — лёгкий перелив
+            const waveWidth = 6.0;         // широкая — мягкий переход
+            let lastTime = performance.now();
+        
             function animate() {
                 requestAnimationFrame(animate);
         
+                const now = performance.now();
+                let deltaTime = (now - lastTime) / 1000;
+                lastTime = now;
+                
+                if (deltaTime > 0.1) deltaTime = 0.1;
+        
                 sphereGroup.rotation.y += 0.002;
                 sphereGroup.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
-                stars.rotation.y += 0.0002;
         
-                // Волна сверху вниз
-                waveY += waveSpeed;
+                // Волна
+                waveY += waveSpeed * deltaTime;
                 if (waveY > gs/2 + 2) {
                     waveY = -gs/2 - 2;
                 }
-
-                // Применяем яркость к линиям
+        
+                // ЕДВА ЗАМЕТНЫЙ ПЕРЕЛИВ
                 gridLines.forEach((l) => {
                     const avgY = l.userData.avgY;
                     const dist = Math.abs(waveY - avgY);
-            
-                    // Яркость: база 0.45, на гребне до 0.9
-                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.1 : 0;
+                    
+                    // Очень тусклая яркость: макс 0.06, база 0
+                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.06 : 0;
                     l.material.opacity = 0 + waveBoost;
-            
-                    // Цвет ярче на гребне
-                    if (dist < waveWidth) {
-                        const boost = (1 - dist / waveWidth) * 0.15;
-                        const baseColor = new THREE.Color(l.userData.baseColor);
-                        const r = Math.min(1, baseColor.r + boost * 0.5);
-                        const g = Math.min(1, baseColor.g + boost * 0.5);
-                        const b = Math.min(1, baseColor.b + boost * 0.6);
-                        l.material.color.setRGB(r, g, b);
-                    } else {
-                        l.material.color.setHex(l.userData.baseColor);
-                    }
+                    
+                    // Цвет не меняем
+                    l.material.color.setHex(l.userData.baseColor);
                 });
-
+        
                 renderer.render(scene, camera);
             }
             animate();
-
+        
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
-
+        
             // Текст
             const phrases = ['YAR-AiD', 'РАЗРАБОТКА', 'АВТОМАТИЗАЦИЯ', 'AI-ИНТЕГРАЦИЯ'];
             let phraseIndex = 0;
             const textEl = document.getElementById('rotatingText');
             const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?/ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
+        
             function scrambleTo(newText, cb) {
                 const old = textEl.textContent;
                 const maxLen = Math.max(old.length, newText.length);
@@ -687,7 +673,7 @@
                     }
                 }, 60);
             }
-
+        
             function changePhrase() {
                 phraseIndex = (phraseIndex + 1) % phrases.length;
                 const np = phrases[phraseIndex];
@@ -699,7 +685,7 @@
                     scrambleTo(np); 
                 }, 150);
             }
-
+        
             setInterval(changePhrase, 3000);
         }
     </script>
