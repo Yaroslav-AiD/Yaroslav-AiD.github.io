@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YAROSLAV-AiD</title>
@@ -16,7 +18,7 @@
         }
         
         body {
-            background: #050510;
+            background: #000000;
             overflow: hidden;
             font-family: 'Exo 2', sans-serif;
             height: 100%;
@@ -136,7 +138,7 @@
             text-align: center;
             z-index: 20;
             pointer-events: none;
-            padding-bottom: 50px;
+            padding-bottom: 70px;
         }
         .mobile-overlay .rotating-text {
             color: rgba(180, 180, 180, 0.3);
@@ -564,7 +566,7 @@
                 const mat = new THREE.LineBasicMaterial({ 
                     color: baseColor, 
                     transparent: true, 
-                    opacity: 0
+                    opacity: 0.03
                 });
                 
                 const line = new THREE.Line(geo, mat);
@@ -587,7 +589,7 @@
         
                     if (p1 && p2 && p3) {
                         const shade = 0.5 + Math.random() * 0.3;
-                        const color = new THREE.Color().setHSL(0, 0, shade * 0.3);  // серый, тусклый
+                        const color = new THREE.Color().setHSL(0, 0, shade * 0.4);  // серый, тусклый
                         addTriangle(p1, p2, p3, color.getHex());
                     }
                     if (p2 && p3 && p4) {
@@ -632,8 +634,8 @@
                     const dist = Math.abs(waveY - avgY);
                     
                     // Очень тусклая яркость: макс 0.06, база 0
-                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.06 : 0;
-                    l.material.opacity = 0 + waveBoost;
+                    const waveBoost = dist < waveWidth ? (1 - dist / waveWidth) * 0.08 : 0;
+                    l.material.opacity = 0.03 + waveBoost;
                     
                     // Цвет не меняем
                     l.material.color.setHex(l.userData.baseColor);
