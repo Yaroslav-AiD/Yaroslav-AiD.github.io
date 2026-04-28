@@ -539,6 +539,17 @@
             header.position.set(0, 4.2, 0);  // ← z: 0 — ближе к камере
             header.renderOrder = 999;        // ← рендерится последним
             scene.add(header);
+
+            // 2. Градиент хэддера (плавный переход)
+            const headerGradientGeo = new THREE.PlaneGeometry(12, 1.0);
+            const headerGradientMat = new THREE.MeshBasicMaterial({ 
+                color: 0x000000, transparent: true, opacity: 0.7,
+                side: THREE.DoubleSide, depthTest: false, depthWrite: false
+            });
+            const headerGradient = new THREE.Mesh(headerGradientGeo, headerGradientMat);
+            headerGradient.position.set(0, 3.0, 0);
+            headerGradient.renderOrder = 998;
+            scene.add(headerGradient);
         
             // Футтер снизу
             const footerGeo = new THREE.PlaneGeometry(12, 2.0);
@@ -554,6 +565,17 @@
             footer.position.set(0, -4.2, 0);
             footer.renderOrder = 999;
             scene.add(footer);
+
+            // 4. Градиент футтера (плавный переход)
+            const footerGradientGeo = new THREE.PlaneGeometry(12, 1.0);
+            const footerGradientMat = new THREE.MeshBasicMaterial({ 
+                color: 0x000000, transparent: true, opacity: 0.7,
+                side: THREE.DoubleSide, depthTest: false, depthWrite: false
+            });
+            const footerGradient = new THREE.Mesh(footerGradientGeo, footerGradientMat);
+            footerGradient.position.set(0, -3.0, 0);
+            footerGradient.renderOrder = 998;
+            scene.add(footerGradient);
         
             // ==================== СЕТКА — ЕДВА ЗАМЕТНАЯ ====================
             const gridGroup = new THREE.Group();
